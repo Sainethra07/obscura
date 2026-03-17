@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Obscura Login</title>
+
+<link rel="stylesheet" href="style.css">
+
+<style>
+.error{
+  color:red;
+  text-align:center;
+  margin-top:10px;
+  font-size:14px;
+}
+.forgot-pass a{
+  color:blue;
+  cursor:pointer;
+  text-decoration:underline;
+}
+</style>
+
+</head>
+
+<body>
+
+<br><br>
+
+<div class="cont">
+
+<!-- SIGN IN -->
+<div class="form sign-in">
+<h2>Welcome</h2>
+
+<label>
+<span>Email</span>
+<input type="email" id="loginEmail">
+</label>
+
+<label>
+<span>Password</span>
+<input type="password" id="loginPassword">
+</label>
+
+<p class="forgot-pass">
+<a href="forgot.html">Forgot password?</a>
+</p>
+
+<button type="button" class="submit" onclick="login()">
+Sign In
+</button>
+
+<p class="error" id="loginError"></p>
+</div>
+
+
+<div class="sub-cont">
+
+<div class="img">
+
+<div class="img__text m--up">
+<h3>Don't have an account? Please Sign up!</h3>
+</div>
+
+<div class="img__text m--in">
+<h3>If you already have an account, just sign in.</h3>
+</div>
+
+<div class="img__btn">
+<span class="m--up">Sign Up</span>
+<span class="m--in">Sign In</span>
+</div>
+
+</div>
+
+
+<!-- SIGN UP -->
+
+<div class="form sign-up">
+
+<h2>Create your Account</h2>
+
+<label>
+<span>Name</span>
+<input type="text" id="name">
+</label>
+
+<label>
+<span>Email</span>
+<input type="email" id="email">
+</label>
+
+<label>
+<span>Password</span>
+<input type="password" id="password">
+</label>
+
+<label>
+<span>Confirm Password</span>
+<input type="password" id="confirmPassword">
+</label>
+
+<button type="button" class="submit" onclick="signup()">
+Sign Up
+</button>
+
+<p class="error" id="signupError"></p>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"
+
+
+const firebaseConfig = {
+apiKey: "AIzaSyCvccVRKPqvCo8Uv6Xp_BhXtcFdYmC88Y4",
+authDomain: "digital-vault-e6a7d.firebaseapp.com",
+projectId: "digital-vault-e6a7d",
+storageBucket: "digital-vault-e6a7d.firebasestorage.app",
+messagingSenderId: "924373956285",
+appId: "1:924373956285:web:6acd77d8184cc5764369d4"
+}
+
+const app = initializeApp(firebaseConfig)
+const auth = getAuth(app)
+
+
+// Toggle signup form
+document.querySelector('.img__btn').addEventListener('click', function(){
+document.querySelector('.cont').classList.toggle('s--signup')
+})
+
+
+// SIGNUP
+window.signup = function(){
+
+let email = document.getElementById("email").value
+let password = document.getElementById("password").value
+let confirmPassword = document.getElementById("confirmPassword").value
+let error = document.getElementById("signupError")
+
+if(password !== confirmPassword){
+error.innerHTML = "Passwords do not match"
+return
+}
+
+createUserWithEmailAndPassword(auth,email,password)
+
+.then((userCredential) => {
+
+const user = userCredential.user
+
+// save email for dashboard
+localStorage.setItem("userEmail", user.email)
+
+// optional popup
+alert("Signup successful!")
+
+// go directly to dashboard
+window.location.href = "dash3.html"
+
+})
+
+.catch((err) => {
+error.innerHTML = err.message
+})
+
+}
+
+
+// LOGIN
+window.login = function(){
+
+let email = document.getElementById("loginEmail").value
+let password = document.getElementById("loginPassword").value
+let error = document.getElementById("loginError")
+
+signInWithEmailAndPassword(auth,email,password)
+
+.then((userCredential)=>{
+
+const user = userCredential.user
+
+// SAVE EMAIL FOR DASHBOARD & UPLOAD
+localStorage.setItem("userEmail", user.email)
+
+window.location.href="dash3.html"
+
+})
+
+.catch(()=>{
+error.innerHTML="Invalid email or password"
+})
+
+}
+
+</script>
+
+</body>
+</html>
