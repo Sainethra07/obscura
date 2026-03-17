@@ -1,0 +1,20 @@
+/* Dashboard specific */
+.uploaded-files {
+    margin-top: 20px;
+}
+
+.file-item {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.file-item:last-child {
+    border-bottom: none;
+}
+
+.file-name {
+    color: #555;
+}
