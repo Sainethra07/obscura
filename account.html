@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<title>My Account</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/feather-icons"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+</head>
+
+<body class="bg-gray-100">
+
+<div class="flex h-screen">
+
+<!-- SIDEBAR -->
+
+<div class="w-64 bg-white shadow-lg p-6">
+
+<h1 class="text-2xl font-bold text-indigo-600 mb-10">
+Obscura
+</h1>
+
+<ul class="space-y-4 text-gray-700">
+
+<li onclick="location.href='dash3.html'"
+class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
+<i data-feather="folder"></i>
+My Documents
+</li>
+
+<li onclick="location.href='upload.html'"
+class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
+<i data-feather="upload"></i>
+Upload
+</li>
+
+
+
+<li onclick="location.href='share.html'" class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
+<i data-feather="share-2"></i>
+Share
+</li>
+
+<li onclick="location.href='capsule.html'" class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
+<i data-feather="package"></i>
+Identity Capsule
+</li>
+
+<li class="flex items-center gap-2 p-2 bg-indigo-100 rounded cursor-pointer">
+<i data-feather="user"></i>
+My Account
+
+</li>
+<li onclick="location.href='emergency.html'" class="flex items-center gap-2 p-2 bg-red-100 text-red-600 rounded cursor-pointer font-semibold">
+          <i data-feather="alert-triangle"></i> Emergency Mode
+        </li>
+<li onclick="logout()" class="flex items-center gap-2 p-2 text-red-500 hover:bg-red-100 rounded cursor-pointer">
+<i data-feather="log-out"></i>
+Logout
+</li>
+
+</ul>
+
+</div>
+
+
+<!-- MAIN CONTENT -->
+
+<div class="flex-1 p-10 space-y-8 overflow-y-auto">
+
+<h2 class="text-3xl font-semibold">
+My Account
+</h2>
+
+<!-- PROFILE SECTION -->
+
+<div class="bg-white p-6 rounded-lg shadow">
+
+<h3 class="text-xl font-semibold mb-4">
+Profile Information
+</h3>
+
+<div class="flex items-center gap-6 mb-6">
+
+<img
+id="profileImage"
+src="https://i.pravatar.cc/100"
+class="rounded-full w-24 h-24 object-cover border-4 border-indigo-500"
+/>
+
+<input type="file" id="photoInput" accept="image/*" style="display:none">
+
+<button onclick="openFilePicker()" class="bg-indigo-600 text-white px-4 py-2 rounded">
+Change Photo
+</button>
+
+</div>
+
+<div class="grid grid-cols-2 gap-4">
+
+<input id="name" type="text" placeholder="Name" class="border p-2 rounded">
+<input id="email" type="email" placeholder="Email" class="border p-2 rounded">
+<input id="phone" type="text" placeholder="Phone" class="border p-2 rounded">
+<input id="college" type="text" placeholder="College / Organization" class="border p-2 rounded">
+
+</div>
+
+<button onclick="saveProfile()" class="mt-4 bg-indigo-600 text-white px-6 py-2 rounded">
+Save Changes
+</button>
+
+<p id="status" class="text-green-600 mt-3"></p>
+
+</div>
+
+
+<!-- DOCUMENT STATISTICS -->
+
+<div class="bg-white p-6 rounded-lg shadow">
+
+<h3 class="text-xl font-semibold mb-4">
+Document Statistics
+</h3>
+
+<div class="grid grid-cols-4 gap-6 text-center">
+
+<div>
+<p id="totalFiles" class="text-3xl font-bold text-indigo-600">0</p>
+<p>Total Files</p>
+</div>
+
+<div>
+<p id="imageFiles" class="text-3xl font-bold text-indigo-600">0</p>
+<p>Images</p>
+</div>
+
+<div>
+<p id="pdfFiles" class="text-3xl font-bold text-indigo-600">0</p>
+<p>PDFs</p>
+</div>
+
+<div>
+<p id="otherFiles" class="text-3xl font-bold text-indigo-600">0</p>
+<p>Other Files</p>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+feather.replace()
+
+
+/* GET USER EMAIL */
+
+const userEmail = localStorage.getItem("userEmail")
+
+if(!userEmail){
+alert("Please login first")
+window.location.href="login.html"
+}
+
+document.getElementById("email").value = userEmail
+
+
+/* PROFILE PHOTO */
+
+function openFilePicker(){
+document.getElementById("photoInput").click()
+}
+
+document.getElementById("photoInput").addEventListener("change",function(){
+
+const file=this.files[0]
+
+if(!file) return
+
+const reader=new FileReader()
+
+reader.onload=function(e){
+
+document.getElementById("profileImage").src=e.target.result
+localStorage.setItem("profilePhoto_"+userEmail,e.target.result)
+
+}
+
+reader.readAsDataURL(file)
+
+})
+
+
+/* SAVE PROFILE */
+
+function saveProfile(){
+
+const profile={
+name:document.getElementById("name").value,
+email:userEmail,
+phone:document.getElementById("phone").value,
+college:document.getElementById("college").value
+}
+
+localStorage.setItem("profile_"+userEmail,JSON.stringify(profile))
+
+document.getElementById("status").innerText="Profile Saved ✓"
+
+}
+
+
+/* LOAD PROFILE */
+
+window.onload=function(){
+
+const data=localStorage.getItem("profile_"+userEmail)
+
+if(data){
+
+const profile=JSON.parse(data)
+
+document.getElementById("name").value=profile.name || ""
+document.getElementById("email").value=profile.email || ""
+document.getElementById("phone").value=profile.phone || ""
+document.getElementById("college").value=profile.college || ""
+
+}
+
+const savedPhoto=localStorage.getItem("profilePhoto_"+userEmail)
+
+if(savedPhoto){
+document.getElementById("profileImage").src=savedPhoto
+}
+
+loadStats()
+
+}
+
+
+/* SUPABASE CONNECTION */
+
+const { createClient } = supabase
+
+const supabaseClient = createClient(
+"https://rdkssobkslnjwfjxbnue.supabase.co",
+"sb_publishable_TPUQ4k-bRe9A4Ih4RlB2ow_4JbSZ9A6"
+)
+
+
+/* LOAD DOCUMENT STATS */
+
+async function loadStats(){
+
+const { data, error } = await supabaseClient.storage
+.from("documents")
+.list(userEmail)
+
+if(error){
+console.error(error)
+return
+}
+
+let total=0
+let images=0
+let pdfs=0
+let others=0
+
+if(data){
+
+data.forEach(file=>{
+
+total++
+
+if(file.name.match(/\.(jpg|jpeg|png|gif)$/i)){
+images++
+}
+
+else if(file.name.endsWith(".pdf")){
+pdfs++
+}
+
+else{
+others++
+}
+
+})
+
+}
+
+document.getElementById("totalFiles").innerText=total
+document.getElementById("imageFiles").innerText=images
+document.getElementById("pdfFiles").innerText=pdfs
+document.getElementById("otherFiles").innerText=others
+
+}
+
+
+/* LOGOUT */
+
+function logout(){
+
+localStorage.removeItem("userEmail")
+
+window.location.href="login.html"
+
+}
+
+</script>
+
+</body>
+</html>
+```
