@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<title>Open Shared File</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+
+<div class="bg-white p-8 rounded-lg shadow w-96 text-center">
+
+<h2 class="text-2xl font-semibold mb-4">Protected File</h2>
+
+<input type="password" id="inputPassword" placeholder="Enter password" class="border p-3 w-full rounded mb-4"/>
+
+<button onclick="unlock()" class="bg-indigo-600 text-white px-6 py-2 rounded w-full">
+Open File
+</button>
+
+<p id="error" class="text-red-500 mt-3"></p>
+
+</div>
+
+<script>
+
+const params=new URLSearchParams(window.location.search)
+
+const file=params.get("file")
+const correctPass=params.get("pass")
+
+function unlock(){
+
+const input=document.getElementById("inputPassword").value
+
+if(input===correctPass){
+
+const fileUrl="https://rdkssobkslnjwfjxbnue.supabase.co/storage/v1/object/public/documents/"+file
+
+window.location.href=fileUrl
+
+}else{
+
+document.getElementById("error").innerText="Wrong password"
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
