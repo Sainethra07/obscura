@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<title>Identity Capsule</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/feather-icons"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+</head>
+
+<body class="bg-gray-100">
+
+<div class="flex h-screen">
+
+<div class="w-64 bg-white shadow-lg p-6 flex flex-col justify-between">
+<div>
+<h1 class="text-2xl font-bold text-indigo-600 mb-10">Obscura</h1>
+
+<ul class="space-y-4 text-gray-700">
+
+<li onclick="location.href='dash3.html'" class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
+<i data-feather="folder"></i>My Documents
+</li>
+
+<li onclick="location.href='upload.html'" class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
+<i data-feather="upload"></i>Upload
+</li>
+
+
+<li onclick="location.href='share.html'" class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
+<i data-feather="share-2"></i>Share
+</li>
+
+<li class="flex items-center gap-2 p-2 bg-indigo-100 rounded cursor-pointer">
+<i data-feather="package"></i>Identity Capsule
+</li>
+
+<li onclick="location.href='account.html'" class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
+<i data-feather="user"></i>My Account
+</li>
+<li onclick="location.href='emergency.html'" class="flex items-center gap-2 p-2 bg-red-100 text-red-600 rounded cursor-pointer font-semibold">
+          <i data-feather="alert-triangle"></i> Emergency Mode
+        </li>
+
+</ul>
+</div>
+<ul class="space-y-4 text-gray-700">
+<li onclick="logout()" class="flex items-center gap-2 p-2 text-red-500 hover:bg-red-100 rounded cursor-pointer">
+<i data-feather="log-out"></i>
+Logout
+</li>
+</ul>
+</div>
+
+<div class="flex-1 p-10 overflow-y-auto">
+
+<h2 class="text-3xl font-semibold mb-8">Identity Capsule</h2>
+
+<div class="bg-white p-8 rounded-lg shadow max-w-2xl space-y-5">
+    <p class="text-gray-600 mb-6">A Digital Identity Capsule is a secure bundle of important personal information and documents stored in one encrypted vault. Select the documents you want to include in this capsule.</p>
+
+<label class="font-medium">Select Documents for Capsule</label>
+<div id="loadingDocs" class="text-gray-500">Loading documents...</div>
+<div id="fileList" class="space-y-2 max-h-64 overflow-y-auto border p-4 rounded bg-gray-50 hidden"></div>
+
+<label class="font-medium block mt-6">Set Capsule Password</label>
+<input type="password" id="sharePassword" placeholder="Enter secure password" class="border p-3 rounded w-full"/>
+
+<button onclick="generateLink()" class="bg-indigo-600 text-white px-6 py-3 rounded w-full font-medium mt-4 hover:bg-indigo-700 transition">
+Generate Identity Capsule
+</button>
+
+<div id="resultBox" class="hidden space-y-3 mt-8 p-4 bg-gray-50 border rounded">
+
+<label class="font-medium text-green-700">Capsule Link Generated Successfully</label>
+<div class="flex gap-2">
+    <input id="shareLink" class="border p-2 rounded flex-1 bg-white" readonly/>
+    <button onclick="copyLink()" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">
+    Copy
+    </button>
+</div>
+
+<div class="text-center mt-6">
+<p class="font-medium mb-2">Scan QR Code</p>
+<div id="qrcode" class="flex justify-center flex-col items-center"></div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+feather.replace()
+
+const { createClient } = supabase
+
+const supabaseClient = createClient(
+"https://rdkssobkslnjwfjxbnue.supabase.co",
+"sb_publishable_TPUQ4k-bRe9A4Ih4RlB2ow_4JbSZ9A6"
+)
+
+function logout(){
+
+localStorage.removeItem("userEmail")
+
+window.location.href="login.html"
+
+}
+
+async function loadFiles(){
+
+const userEmail = localStorage.getItem("userEmail")
+if(!userEmail){
+    window.location.href="login.html"
+}
+
+const { data, error } = await supabaseClient.storage
+.from("documents")
+.list(userEmail)
+
+const container = document.getElementById("fileList")
+const loader = document.getElementById("loadingDocs")
+
+if (error) {
+    loader.innerText = "Error loading documents."
+    return
+}
+
+loader.classList.add("hidden")
+container.classList.remove("hidden")
+
+if(!data || data.length === 0){
+    container.innerHTML = "<p class='text-gray-500'>No documents available. Upload some files first.</p>"
+    return
+}
+
+data.forEach(file=>{
+
+let icon = "file";
+const lower = file.name.toLowerCase();
+if(lower.endsWith(".png") || lower.endsWith(".jpg") || lower.endsWith(".jpeg")) icon = "image";
+else if(lower.endsWith(".pdf")) icon = "file-text";
+
+const div = document.createElement("div")
+div.className = "flex items-center gap-3 p-2 hover:bg-gray-100 rounded cursor-pointer border bg-white"
+div.innerHTML = `
+    <input type="checkbox" value="${userEmail}/${file.name}" class="capsule-file w-4 h-4 text-indigo-600 rounded border-gray-300">
+    <i data-feather="${icon}" class="w-5 h-5 text-gray-500"></i>
+    <span class="text-gray-800 font-medium truncate" title="${file.name}">${file.name}</span>
+`
+container.appendChild(div)
+
+})
+feather.replace()
+
+}
+
+loadFiles()
+
+function generateLink(){
+
+const checkboxes = document.querySelectorAll('.capsule-file:checked')
+const selectedFiles = Array.from(checkboxes).map(cb => cb.value)
+const password=document.getElementById("sharePassword").value
+
+if(selectedFiles.length === 0){
+alert("Please select at least one document for the capsule")
+return
+}
+
+if(!password){
+alert("Please set a password for the capsule")
+return
+}
+
+const payload = JSON.stringify(selectedFiles)
+const encryptedPayload = CryptoJS.AES.encrypt(payload, password).toString()
+
+const link=window.location.origin+
+"/capsule-view.html?capsule="+encodeURIComponent(encryptedPayload)
+
+document.getElementById("shareLink").value=link
+
+document.getElementById("resultBox").classList.remove("hidden")
+
+document.getElementById("qrcode").innerHTML=""
+
+new QRCode(document.getElementById("qrcode"),{
+text:link,
+width:160,
+height:160
+})
+
+}
+
+function copyLink(){
+
+const link=document.getElementById("shareLink")
+
+link.select()
+
+document.execCommand("copy")
+
+alert("Link copied")
+
+}
+
+</script>
+
+</body>
+</html>
