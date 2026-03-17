@@ -34,21 +34,24 @@ My Documents
 Upload
 </li>
 
-<li onclick="location.href='resume.html'" class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
-<i data-feather="file-text"></i>
-Resume
-</li>
 
 <li onclick="location.href='share.html'" class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
 <i data-feather="share-2"></i>
 Share
 </li>
 
+<li onclick="location.href='capsule.html'" class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
+<i data-feather="package"></i>
+Identity Capsule
+</li>
+
 <li onclick="location.href='account.html'" class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
 <i data-feather="user"></i>
 My Account
 </li>
-
+<li onclick="location.href='emergency.html'" class="flex items-center gap-2 p-2 bg-red-100 text-red-600 rounded cursor-pointer font-semibold">
+          <i data-feather="alert-triangle"></i> Emergency Mode
+        </li>
 <li onclick="logout()" class="flex items-center gap-2 p-2 text-red-500 hover:bg-red-100 rounded cursor-pointer">
 <i data-feather="log-out"></i>
 Logout
@@ -73,7 +76,7 @@ Logout
 
 <i data-feather="bell"></i>
 
-<img id="profilePic" src="https://i.pravatar.cc/40" class="rounded-full w-10 h-10 object-cover">
+<img id="dashProfileImage" src="https://i.pravatar.cc/40" class="rounded-full w-10 h-10 object-cover">
 
 </div>
 
@@ -111,9 +114,9 @@ My Documents
 </div>
 
 
-<!-- FILE GRID -->
+<!-- CATEGORY GRIDS -->
 
-<div id="documentsGrid" class="grid grid-cols-3 gap-6"></div>
+<div id="categoriesContainer" class="space-y-12"></div>
 
 </div>
 
@@ -126,6 +129,7 @@ My Documents
 <script>
 
 feather.replace()
+
 
 /* GET USER EMAIL */
 
@@ -140,13 +144,20 @@ window.location.href="login.html"
 }
 
 
-/* LOAD PROFILE PHOTO FROM ACCOUNT PAGE */
+/* LOAD PROFILE PHOTO */
 
-const savedPhoto = localStorage.getItem("profilePhoto_" + userEmail)
+function loadProfilePhoto(){
+
+const savedPhoto = localStorage.getItem("profilePhoto_"+userEmail)
 
 if(savedPhoto){
-document.getElementById("profilePic").src = savedPhoto
+document.getElementById("dashProfileImage").src = savedPhoto
 }
+
+}
+
+loadProfilePhoto()
+
 
 
 /* SUPABASE */
@@ -173,18 +184,38 @@ console.error(error)
 return
 }
 
-const grid = document.getElementById("documentsGrid")
+const container = document.getElementById("categoriesContainer")
 
-grid.innerHTML=""
+container.innerHTML=""
 
 let total=0
 let images=0
 let pdfs=0
 
+const categories = {
+  education: { title: "Education", files: [], keywords: ["certificate", "assignment", "note", "marksheet"] },
+  health: { title: "Health", files: [], keywords: ["medical", "report", "prescription"] },
+  work: { title: "Work", files: [], keywords: ["resume", "job", "letter", "presentation"] },
+  finance: { title: "Finance", files: [], keywords: ["bank", "statement", "bill", "contract"] },
+  personal: { title: "Personal", files: [], keywords: ["id", "personal", "photo"] },
+  media: { title: "Media", files: [], keywords: ["image", "music", "video", "mp4", "mp3", "jpg", "png", "jpeg"] },
+  others: { title: "Others", files: [], keywords: [] }
+};
+
+function getFileCategory(filename) {
+  const lowerName = filename.toLowerCase();
+  for (const key in categories) {
+    if (key === 'others') continue;
+    if (categories[key].keywords.some(kw => lowerName.includes(kw))) {
+      return key;
+    }
+  }
+  return 'others';
+}
 
 if(!data || data.length===0){
 
-grid.innerHTML="<p class='col-span-3 text-center text-gray-500'>No files uploaded</p>"
+container.innerHTML="<p class='text-center text-gray-500'>No files uploaded</p>"
 
 return
 
@@ -232,13 +263,15 @@ content=`<div class="flex justify-center mb-4">
 }
 
 
-grid.innerHTML += `
+const category = getFileCategory(file.name);
+
+categories[category].files.push(`
 
 <div class="bg-white p-6 rounded-lg shadow hover:shadow-lg transition">
 
 ${content}
 
-<h3 class="font-semibold mb-2">${file.name}</h3>
+<h3 class="font-semibold mb-2 truncate" title="${file.name}">${file.name}</h3>
 
 <a href="${fileUrl}" target="_blank" class="text-indigo-600 text-sm">
 Open
@@ -246,8 +279,24 @@ Open
 
 </div>
 
-`
+`)
 
+}
+
+for (const key in categories) {
+  if (categories[key].files.length > 0) {
+    container.innerHTML += `
+      <div>
+        <h3 class="text-xl font-medium mb-4 text-gray-700 border-b pb-2 flex items-center gap-2">
+           ${categories[key].title} 
+           <span class="text-sm bg-gray-200 px-2 py-0.5 rounded text-gray-600">${categories[key].files.length}</span>
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          ${categories[key].files.join('')}
+        </div>
+      </div>
+    `;
+  }
 }
 
 
