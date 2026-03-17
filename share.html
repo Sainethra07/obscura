@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<title>Share File</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/feather-icons"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+</head>
+
+<body class="bg-gray-100">
+
+<div class="flex h-screen">
+
+<div class="w-64 bg-white shadow-lg p-6">
+
+<h1 class="text-2xl font-bold text-indigo-600 mb-10">Obscura</h1>
+
+<ul class="space-y-4 text-gray-700">
+
+<li onclick="location.href='dash3.html'" class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
+<i data-feather="folder"></i>My Documents
+</li>
+
+<li onclick="location.href='upload.html'" class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
+<i data-feather="upload"></i>Upload
+</li>
+
+
+<li class="flex items-center gap-2 p-2 bg-indigo-100 rounded cursor-pointer">
+<i data-feather="share-2"></i>Share
+</li>
+
+<li onclick="location.href='capsule.html'" class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
+<i data-feather="package"></i>Identity Capsule
+</li>
+
+<li onclick="location.href='account.html'" class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
+<i data-feather="user"></i>My Account
+</li>
+<li onclick="location.href='emergency.html'" class="flex items-center gap-2 p-2 bg-red-100 text-red-600 rounded cursor-pointer font-semibold">
+          <i data-feather="alert-triangle"></i> Emergency Mode
+        </li>
+<li onclick="logout()" class="flex items-center gap-2 p-2 text-red-500 hover:bg-red-100 rounded cursor-pointer">
+<i data-feather="log-out"></i>
+Logout
+</li>
+
+</ul>
+
+</div>
+
+<div class="flex-1 p-10">
+
+<h2 class="text-3xl font-semibold mb-8">Share File</h2>
+
+<div class="bg-white p-8 rounded-lg shadow max-w-xl space-y-5">
+
+<label class="font-medium">Select File</label>
+
+<select id="fileSelect" class="border p-3 rounded w-full"></select>
+
+<label class="font-medium">Set Password</label>
+
+<input type="password" id="sharePassword" placeholder="Enter password" class="border p-3 rounded w-full"/>
+
+<button onclick="generateLink()" class="bg-indigo-600 text-white px-6 py-2 rounded w-full">
+Generate Link
+</button>
+
+<div id="resultBox" class="hidden space-y-3">
+
+<label class="font-medium">Share Link</label>
+
+<input id="shareLink" class="border p-3 rounded w-full" readonly/>
+
+<button onclick="copyLink()" class="bg-green-600 text-white px-4 py-2 rounded">
+Copy Link
+</button>
+
+<div class="text-center mt-6">
+<p class="font-medium mb-2">Scan QR Code</p>
+<div id="qrcode"></div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+feather.replace()
+
+const { createClient } = supabase
+
+const supabaseClient = createClient(
+"https://rdkssobkslnjwfjxbnue.supabase.co",
+"sb_publishable_TPUQ4k-bRe9A4Ih4RlB2ow_4JbSZ9A6"
+)
+
+async function loadFiles(){
+
+const userEmail = localStorage.getItem("userEmail")
+
+const { data } = await supabaseClient.storage
+.from("documents")
+.list(userEmail)
+
+const select = document.getElementById("fileSelect")
+
+data.forEach(file=>{
+
+const option=document.createElement("option")
+
+option.value=userEmail+"/"+file.name
+option.text=file.name
+
+select.appendChild(option)
+
+})
+
+}
+
+loadFiles()
+
+function generateLink(){
+
+const file=document.getElementById("fileSelect").value
+const password=document.getElementById("sharePassword").value
+
+if(!file || !password){
+alert("Select file and enter password")
+return
+}
+
+const link=window.location.origin+
+"/view.html?file="+encodeURIComponent(file)+
+"&pass="+encodeURIComponent(password)
+
+document.getElementById("shareLink").value=link
+
+document.getElementById("resultBox").classList.remove("hidden")
+
+document.getElementById("qrcode").innerHTML=""
+
+new QRCode(document.getElementById("qrcode"),{
+text:link,
+width:160,
+height:160
+})
+
+}
+
+function copyLink(){
+
+const link=document.getElementById("shareLink")
+
+link.select()
+
+document.execCommand("copy")
+
+alert("Link copied")
+
+}
+
+</script>
+
+</body>
+</html>
